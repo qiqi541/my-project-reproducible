@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+
+data/*
+!data/.gitkeep
+
+*.db
+*.db-shm
+*.db-wal
+
+*.tar.gz
+docker-compose.confluent.backup.yml
+results/invalid-ablation-*/

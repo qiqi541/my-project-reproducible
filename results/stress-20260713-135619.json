@@ -1,0 +1,37 @@
+{
+  "generated_at": 1783950979.9841616,
+  "results": [
+    {
+      "architecture": "direct_sqlite_coupled",
+      "planned": 1000,
+      "producer_acked": 80,
+      "persisted": 80,
+      "lost": 920,
+      "loss_rate_percent": 92.0,
+      "elapsed_seconds": 4.220828,
+      "database_lock_errors": 920,
+      "other_errors": 0,
+      "latency_average_ms": 32.632,
+      "latency_p95_ms": 84.656,
+      "latency_p99_ms": 147.954
+    },
+    {
+      "architecture": "kafka_decoupled",
+      "run_id": "stress-kafka-1783950973-dc2a39b1",
+      "planned": 1000,
+      "producer_acked": 1000,
+      "persisted": 1000,
+      "lost": 0,
+      "loss_rate_percent": 0.0,
+      "elapsed_seconds": 6.078978,
+      "send_errors": 0,
+      "first_started_at": 1783950973.9020002,
+      "all_producer_acked_at": 1783950976.3567946,
+      "all_persisted_or_timeout_at": 1783950979.9809735,
+      "latency_average_ms": 22.559,
+      "latency_p95_ms": 38.566,
+      "latency_p99_ms": 213.131,
+      "error_examples": []
+    }
+  ]
+}

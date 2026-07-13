@@ -1,0 +1,60 @@
+{
+  "summary": {
+    "run_id": "ablation-B-20260713-220657",
+    "scenario": "B_waf_enabled",
+    "total": 500,
+    "success": 0,
+    "failure": 500,
+    "success_rate_percent": 0.0,
+    "average_risk_score": 0.0,
+    "risk_distribution": {
+      "INFO": 500
+    },
+    "latency": {
+      "average_ms": 21.318,
+      "p50_ms": 18.898,
+      "p95_ms": 34.692,
+      "p99_ms": 69.136,
+      "min_ms": 10.922,
+      "max_ms": 119.825
+    },
+    "by_attack_type": {
+      "sql_injection": {
+        "count": 500,
+        "success": 0,
+        "success_rate_percent": 0.0,
+        "average_risk_score": 0.0,
+        "latency_average_ms": 21.318,
+        "latency_p50_ms": 18.898,
+        "latency_p95_ms": 34.692,
+        "latency_p99_ms": 69.136
+      }
+    }
+  },
+  "ablation": {
+    "run_id": "ablation-B-20260713-220657",
+    "scenario": "B_waf_enabled",
+    "sql_events": 500,
+    "ground_truth_positive": 0,
+    "ground_truth_negative": 500,
+    "static_false_positives": 500,
+    "static_false_positive_rate_percent": 100.0,
+    "drs_false_positives": 0,
+    "drs_false_positive_rate_percent": 0.0,
+    "average_drs": 0.0,
+    "static_baseline_score": 9.0
+  },
+  "comparison_ablation": {
+    "run_id": "ablation-A-20260713-220657",
+    "scenario": "A_no_waf",
+    "sql_events": 500,
+    "ground_truth_positive": 500,
+    "ground_truth_negative": 0,
+    "static_false_positives": 0,
+    "static_false_positive_rate_percent": null,
+    "drs_false_positives": 0,
+    "drs_false_positive_rate_percent": null,
+    "average_drs": 8.9,
+    "static_baseline_score": 9.0
+  }
+}

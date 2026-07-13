@@ -1,0 +1,81 @@
+{
+  "summary": {
+    "run_id": "full-20260713-205716",
+    "scenario": "baseline_no_waf",
+    "total": 1825,
+    "success": 1460,
+    "failure": 365,
+    "success_rate_percent": 80.0,
+    "average_risk_score": 5.72,
+    "risk_distribution": {
+      "INFO": 365,
+      "MEDIUM": 730,
+      "HIGH": 365,
+      "LOW": 365
+    },
+    "latency": {
+      "average_ms": 119.679,
+      "p50_ms": 94.179,
+      "p95_ms": 316.709,
+      "p99_ms": 525.641,
+      "min_ms": 10.533,
+      "max_ms": 2173.277
+    },
+    "by_attack_type": {
+      "brute_force": {
+        "count": 730,
+        "success": 365,
+        "success_rate_percent": 50.0,
+        "average_risk_score": 3.9,
+        "latency_average_ms": 112.53,
+        "latency_p50_ms": 90.248,
+        "latency_p95_ms": 283.135,
+        "latency_p99_ms": 436.02
+      },
+      "padding_oracle": {
+        "count": 365,
+        "success": 365,
+        "success_rate_percent": 100.0,
+        "average_risk_score": 6.7,
+        "latency_average_ms": 125.741,
+        "latency_p50_ms": 95.687,
+        "latency_p95_ms": 338.208,
+        "latency_p99_ms": 579.535
+      },
+      "sql_injection": {
+        "count": 365,
+        "success": 365,
+        "success_rate_percent": 100.0,
+        "average_risk_score": 8.9,
+        "latency_average_ms": 115.303,
+        "latency_p50_ms": 96.519,
+        "latency_p95_ms": 279.84,
+        "latency_p99_ms": 466.234
+      },
+      "xss_attack": {
+        "count": 365,
+        "success": 365,
+        "success_rate_percent": 100.0,
+        "average_risk_score": 5.2,
+        "latency_average_ms": 132.292,
+        "latency_p50_ms": 95.177,
+        "latency_p95_ms": 370.912,
+        "latency_p99_ms": 682.882
+      }
+    }
+  },
+  "ablation": {
+    "run_id": "full-20260713-205716",
+    "scenario": "baseline_no_waf",
+    "sql_events": 365,
+    "ground_truth_positive": 365,
+    "ground_truth_negative": 0,
+    "static_false_positives": 0,
+    "static_false_positive_rate_percent": null,
+    "drs_false_positives": 0,
+    "drs_false_positive_rate_percent": null,
+    "average_drs": 8.9,
+    "static_baseline_score": 9.0
+  },
+  "comparison_ablation": null
+}

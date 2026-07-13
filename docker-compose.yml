@@ -1,0 +1,142 @@
+name: microservice-risk-research
+
+services:
+  kafka:
+    image: apache/kafka-native:3.9.2
+    hostname: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: CONTROLLER://:29093,INTERNAL://:29092,EXTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://${KAFKA_HOST:-localhost}:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      CLUSTER_ID: 4L6g3nShT-eMCtK--X86sw
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+    networks: [research_net]
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/29092'"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  vuln-web:
+    build:
+      context: .
+      dockerfile: vuln-web/Dockerfile
+    environment:
+      WAF_ENABLED: ${WAF_ENABLED:-true}
+    ports:
+      - "5000:5000"
+    networks: [research_net]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health', timeout=2)"]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+
+  consumer:
+    build:
+      context: .
+      dockerfile: consumer/Dockerfile
+    environment:
+      KAFKA_BROKER: kafka:29092
+      EVIDENCE_TOPIC: evidence_topic
+      PERFORMANCE_TOPIC: performance_test_topic
+      KAFKA_GROUP_ID: risk-decision-v2
+      DB_FILE: /data/passwords.db
+      RISK_CONFIG: /app/config/risk_model.json
+    volumes:
+      - ./data:/data
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks: [research_net]
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: dashboard/Dockerfile
+    environment:
+      DB_FILE: /data/passwords.db
+      DASHBOARD_USER: ${DASHBOARD_USER:-admin}
+      DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD:-change-me}
+      DASHBOARD_SECRET: ${DASHBOARD_SECRET:-development-only-change-me}
+    volumes:
+      - ./data:/data
+    ports:
+      - "5001:5000"
+    depends_on:
+      - consumer
+    networks: [research_net]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+  producer:
+    profiles: ["demo"]
+    build:
+      context: .
+      dockerfile: producer/Dockerfile
+    environment:
+      KAFKA_BROKER: kafka:29092
+      EVIDENCE_TOPIC: evidence_topic
+      TARGET_BASE: http://vuln-web:5000
+      PASSWORD_FILE: /app/producer/payloads.txt
+      SCENARIO: demo
+      PROBE_ROUNDS: 0
+      PROBE_INTERVAL_SECONDS: ${PROBE_INTERVAL_SECONDS:-1.0}
+      PROBE_CYCLE_PAUSE_SECONDS: ${PROBE_CYCLE_PAUSE_SECONDS:-5.0}
+    depends_on:
+      kafka:
+        condition: service_healthy
+      vuln-web:
+        condition: service_healthy
+    networks: [research_net]
+    restart: unless-stopped
+
+  tools:
+    profiles: ["tools"]
+    build:
+      context: .
+      dockerfile: tools/Dockerfile
+    volumes:
+      - ./data:/data
+      - ./results:/results
+    networks: [research_net]
+
+  stress-test:
+    profiles: ["tools"]
+    build:
+      context: .
+      dockerfile: experiments/Dockerfile
+    environment:
+      KAFKA_BROKER: kafka:29092
+      PERFORMANCE_TOPIC: performance_test_topic
+      DB_FILE: /data/passwords.db
+    volumes:
+      - ./data:/data
+      - ./results:/results
+    depends_on:
+      kafka:
+        condition: service_healthy
+      consumer:
+        condition: service_started
+    networks: [research_net]
+
+networks:
+  research_net:
+    driver: bridge

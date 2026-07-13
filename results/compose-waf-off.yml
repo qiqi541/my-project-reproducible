@@ -1,0 +1,4 @@
+services:
+  vuln-web:
+    environment:
+      WAF_ENABLED: "false"

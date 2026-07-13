@@ -1,0 +1,48 @@
+{
+  "model_name": "Dynamic Risk Score",
+  "model_version": "2.0.0",
+  "criteria": {
+    "names": ["impact", "exploitability"],
+    "pairwise_matrix": [
+      [1.0, 1.5],
+      [0.6666666667, 1.0]
+    ],
+    "weights": {
+      "impact": 0.6,
+      "exploitability": 0.4
+    },
+    "scale_note": "Continuous ratio scale derived from expert aggregation; it is not the integer-only Saaty 1-9 scale."
+  },
+  "thresholds": {
+    "high": 8.0,
+    "medium": 6.0
+  },
+  "vulnerabilities": {
+    "sql_injection": {
+      "impact": 9.5,
+      "attack_complexity": 2.0,
+      "static_baseline_score": 9.0
+    },
+    "brute_force": {
+      "impact": 7.0,
+      "attack_complexity": 1.0,
+      "static_baseline_score": 7.8
+    },
+    "xss_attack": {
+      "impact": 4.0,
+      "attack_complexity": 3.0,
+      "static_baseline_score": 5.2
+    },
+    "padding_oracle": {
+      "impact": 8.5,
+      "attack_complexity": 6.0,
+      "static_baseline_score": 6.7
+    },
+    "stress_test": {
+      "impact": 5.0,
+      "attack_complexity": 5.0,
+      "static_baseline_score": 5.0
+    }
+  }
+}
+

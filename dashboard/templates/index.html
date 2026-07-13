@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>动态风险态势感知</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+  <style>
+    :root { color-scheme: dark; --bg:#0b1020; --panel:#151c32; --line:#293454; --muted:#9eaccd; --cyan:#56d4ff; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: #eef2ff; font-family: system-ui, sans-serif; }
+    main { width: min(1180px, 94vw); margin: 28px auto 60px; }
+    header { display:flex; justify-content:space-between; gap:20px; align-items:flex-start; margin-bottom:22px; }
+    h1 { margin:0 0 6px; font-size:clamp(24px,4vw,36px); }
+    .subtitle,.status { color:var(--muted); }
+    a { color:var(--cyan); }
+    .controls { display:flex; gap:10px; align-items:center; margin:18px 0; }
+    select { min-width:270px; padding:9px; background:#10172a; color:white; border:1px solid var(--line); border-radius:8px; }
+    .cards { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; }
+    .card,.panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; }
+    .card { padding:18px; }
+    .label { color:var(--muted); font-size:13px; }
+    .value { margin-top:8px; font-size:28px; font-weight:750; }
+    .charts { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:14px 0; }
+    .panel { padding:18px; min-height:310px; }
+    .table-panel { overflow:auto; }
+    table { width:100%; border-collapse:collapse; min-width:920px; }
+    th,td { padding:11px 12px; border-bottom:1px solid var(--line); text-align:left; font-size:13px; }
+    th { color:var(--cyan); }
+    .tag { display:inline-block; padding:3px 8px; border-radius:999px; font-weight:700; }
+    .HIGH { background:#7f1d1d; }.MEDIUM { background:#854d0e; }.LOW { background:#115e59; }.INFO { background:#334155; }
+    @media(max-width:850px){ .cards{grid-template-columns:repeat(2,1fr)} .charts{grid-template-columns:1fr} header{display:block} }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div><h1>动态风险态势感知</h1><div class="subtitle">DRS v2 · Kafka 端到端证据链</div></div>
+    <div><a href="/logout">退出</a><div id="status" class="status">正在读取数据…</div></div>
+  </header>
+
+  <div class="controls">
+    <label for="runSelect">实验批次</label>
+    <select id="runSelect"><option value="">全部批次</option></select>
+  </div>
+
+  <section class="cards">
+    <div class="card"><div class="label">事件总数</div><div class="value" id="total">0</div></div>
+    <div class="card"><div class="label">成功验证</div><div class="value" id="success">0</div></div>
+    <div class="card"><div class="label">平均 DRS</div><div class="value" id="avgRisk">0.0</div></div>
+    <div class="card"><div class="label">端到端平均时延</div><div class="value"><span id="avgLatency">0</span><small> ms</small></div></div>
+    <div class="card"><div class="label">端到端 P95</div><div class="value"><span id="p95Latency">0</span><small> ms</small></div></div>
+  </section>
+
+  <section class="charts">
+    <div class="panel"><canvas id="successChart"></canvas></div>
+    <div class="panel"><canvas id="riskChart"></canvas></div>
+  </section>
+
+  <section class="panel table-panel">
+    <h2>最近证据记录</h2>
+    <table>
+      <thead><tr><th>时间</th><th>批次/场景</th><th>攻击类型</th><th>状态码</th><th>DRS</th><th>时延</th><th>Payload</th></tr></thead>
+      <tbody id="logs"></tbody>
+    </table>
+  </section>
+</main>
+
+<script>
+  Chart.defaults.color = '#cbd5f5';
+  const successChart = new Chart(document.getElementById('successChart'), {
+    type:'doughnut', data:{labels:['成功验证','阻断/失败'],datasets:[{data:[0,0],backgroundColor:['#fb7185','#34d399'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:'闭环验证结果'}}}
+  });
+  const riskChart = new Chart(document.getElementById('riskChart'), {
+    type:'bar', data:{labels:['HIGH','MEDIUM','LOW','INFO'],datasets:[{label:'事件数',data:[0,0,0,0],backgroundColor:['#ef4444','#f59e0b','#14b8a6','#64748b']}]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}},plugins:{title:{display:true,text:'动态风险等级分布'},legend:{display:false}}}
+  });
+
+  const runSelect = document.getElementById('runSelect');
+  runSelect.addEventListener('change', refresh);
+  let populatedRuns = false;
+
+  function esc(value){ return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function num(value){ return Number(value || 0).toLocaleString('zh-CN'); }
+
+  async function refresh(){
+    const query = runSelect.value ? `?run_id=${encodeURIComponent(runSelect.value)}` : '';
+    try {
+      const response = await fetch(`/api/data${query}`, {cache:'no-store'});
+      if (response.status === 401) { location.href='/login'; return; }
+      const data = await response.json();
+      document.getElementById('total').textContent = num(data.total);
+      document.getElementById('success').textContent = num(data.success);
+      document.getElementById('avgRisk').textContent = Number(data.average_risk).toFixed(2);
+      document.getElementById('avgLatency').textContent = Number(data.latency.average_ms).toFixed(1);
+      document.getElementById('p95Latency').textContent = Number(data.latency.p95_ms).toFixed(1);
+      document.getElementById('status').textContent = `每 3 秒更新 · ${new Date(data.server_time*1000).toLocaleTimeString()}`;
+      successChart.data.datasets[0].data = [data.success, data.fail]; successChart.update();
+      riskChart.data.datasets[0].data = ['HIGH','MEDIUM','LOW','INFO'].map(k => data.risks[k] || 0); riskChart.update();
+      document.getElementById('logs').innerHTML = data.logs.map(log => `<tr>
+        <td>${new Date(log.persisted_at*1000).toLocaleTimeString()}</td><td>${esc(log.run_id)} / ${esc(log.scenario)}</td>
+        <td>${esc(log.attack_type)}</td><td>${log.http_status}</td><td><span class="tag ${esc(log.risk_level)}">${esc(log.risk_level)} ${Number(log.risk_score).toFixed(1)}</span></td>
+        <td>${Number(log.latency_ms).toFixed(1)} ms</td><td><code>${esc(log.payload)}</code></td></tr>`).join('');
+      if (!populatedRuns) {
+        for (const run of data.runs) { const option=document.createElement('option'); option.value=run.run_id; option.textContent=`${run.run_id} (${run.scenario}, ${run.count})`; runSelect.appendChild(option); }
+        populatedRuns=true;
+      }
+    } catch (error) { document.getElementById('status').textContent = `读取失败：${error}`; }
+  }
+  refresh(); setInterval(refresh, 3000);
+</script>
+</body>
+</html>
+

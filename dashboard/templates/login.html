@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>实验平台登录</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #0b1020; font-family: system-ui, sans-serif; color: #eef2ff; }
+    main { width: min(92vw, 380px); padding: 34px; background: #151c32; border: 1px solid #293454; border-radius: 16px; box-shadow: 0 22px 70px rgba(0,0,0,.35); }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    p { color: #9eaccd; margin: 0 0 24px; }
+    label { display: block; margin: 14px 0 6px; color: #cbd5f5; }
+    input, button { width: 100%; padding: 12px 14px; border-radius: 9px; font: inherit; }
+    input { border: 1px solid #364467; background: #0f1629; color: white; }
+    button { margin-top: 20px; border: 0; background: #56d4ff; color: #07111e; font-weight: 700; cursor: pointer; }
+    .error { margin-top: 16px; color: #ff8c9e; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>微服务漏洞验证平台</h1>
+    <p>论文可复现实验版</p>
+    <form method="post">
+      <label for="username">账号</label>
+      <input id="username" name="username" autocomplete="username" required>
+      <label for="password">口令</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <button type="submit">登录</button>
+    </form>
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  </main>
+</body>
+</html>
+

@@ -1,0 +1,29 @@
+{
+  "primary": {
+    "run_id": "ablation-B-20260713-220657",
+    "scenario": "B_waf_enabled",
+    "sql_events": 500,
+    "ground_truth_positive": 0,
+    "ground_truth_negative": 500,
+    "static_false_positives": 500,
+    "static_false_positive_rate_percent": 100.0,
+    "drs_false_positives": 0,
+    "drs_false_positive_rate_percent": 0.0,
+    "average_drs": 0.0,
+    "static_baseline_score": 9.0
+  },
+  "comparison": {
+    "run_id": "ablation-A-20260713-220657",
+    "scenario": "A_no_waf",
+    "sql_events": 500,
+    "ground_truth_positive": 500,
+    "ground_truth_negative": 0,
+    "static_false_positives": 0,
+    "static_false_positive_rate_percent": null,
+    "drs_false_positives": 0,
+    "drs_false_positive_rate_percent": null,
+    "average_drs": 8.9,
+    "static_baseline_score": 9.0
+  },
+  "total_records": 1000
+}
